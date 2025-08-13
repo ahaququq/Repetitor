@@ -4,8 +4,8 @@
 #include "preprocessor.h"
 
 int main() {
-	std::fstream in("./main.src");
-	std::fstream out("./main.out");
+	std::ifstream in("./main.src");
+	std::ofstream out("./main.out");
 
 	std::string sourceCode;
 

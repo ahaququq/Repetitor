@@ -91,6 +91,13 @@ std::string remove_comments(const std::string& source) {
 				}
 				if (c == '\'') {
 					char_literal = true;
+					block_comment_only = false;
+					if (blank_line) {
+						output += std::string(muted_indent_tabs, '\t');
+						output += std::string(muted_indent_spaces, ' ');
+						muted_indent_tabs = 0;
+						muted_indent_spaces = 0;
+					}
 					output += '\'';
 				} else if (first_slash && (c == '/' || c == '*')) {
 					if (c == '/') {
