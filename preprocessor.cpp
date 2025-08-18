@@ -116,10 +116,10 @@ std::string remove_comments(const std::string& source) {
 					if (c == '/') {
 						first_slash = true;
 					} else if (c == ' ') {
-						if (!blank_line) output += '_';
+						if (!blank_line) output += ' ';
 						else muted_indent_spaces++;
 					} else if (c == '\t') {
-						if (!blank_line) output += "~~~~";
+						if (!blank_line) output += "\t";
 						else muted_indent_tabs++;
 					} else if (c == '\n') {
 						if (!block_comment_only)
