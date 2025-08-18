@@ -16,7 +16,6 @@
 	expression current;
 
 	bool blank_line = true;
-	bool escape = false;
 	bool long_string = false;
 	unsigned int quotes = 0;
 	std::string white_spaces;
