@@ -5,4 +5,8 @@ set(CMAKE_CXX_STANDARD 26)
 
 add_executable(Repetitor main.cpp
         preprocessor.h
-        preprocessor.cpp)
+        preprocessor.cpp
+        splitter.cpp
+        splitter.h
+        source_module.cpp
+        source_module.h)
