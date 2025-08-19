@@ -123,11 +123,6 @@ std::vector<expression>& choose_split_target(std::deque<expression>& stack, cons
 	return out;
 }
 
-enum expr_separator {
-	CODE,	// `\n` & `;`
-	COMMA,	// `,`
-};
-
 
 
 [[nodiscard]] std::vector<expression> split_recursive_v2(std::deque<char>& stack_in, expr_separator separator = CODE) {
@@ -136,7 +131,9 @@ enum expr_separator {
 	bool string_literal = false;
 	bool char_literal = false;
 	bool escape = false;
-	bool empty_line = false;
+	bool empty_line = true;
+	bool had_code = false;
+	bool had_parameters = false;
 	std::string white_spaces;
 	unsigned int quotes_set = 0;
 	unsigned int quotes_unset = 0;
@@ -181,9 +178,37 @@ enum expr_separator {
 		}
 
 		if (c == '{') {
+			white_spaces = "";
+			empty_line = true;
 			out.back().code_block_children = split_recursive_v2(stack_in, CODE);
+			if (
+				out.back().code_block_children.back().contents.empty() &&
+				out.back().code_block_children.back().code_block_children.empty() &&
+				out.back().code_block_children.back().parameter_children.empty()
+			) {
+				out.back().code_block_children.pop_back();
+			}
+			if (out.back().code_block_children.empty()) out.back().had_code = true;
+			if (true) {
+				out.emplace_back();
+				had_code = false;
+			} else had_code = true;
 		} else if (c == '(') {
+			white_spaces = "";
+			empty_line = true;
 			out.back().parameter_children = split_recursive_v2(stack_in, COMMA);
+			if (
+				out.back().parameter_children.back().contents.empty() &&
+				out.back().parameter_children.back().code_block_children.empty() &&
+				out.back().parameter_children.back().parameter_children.empty()
+			) {
+				out.back().parameter_children.pop_back();
+			}
+			if (out.back().parameter_children.empty()) out.back().had_parameters = true;
+			if (had_parameters) {
+				out.emplace_back();
+				had_parameters = false;
+			} else had_parameters = true;
 		} else if (c == '}' || c == ')') {
 			return out;
 		} else if (
@@ -195,11 +220,16 @@ enum expr_separator {
 				out.back().code_block_children.empty())
 		) {
 			out.emplace_back();
+			had_code = false;
+			had_parameters = false;
 			empty_line = true;
 			white_spaces = "";
 		} else if (c == ' ' || c == '\t' || c == '\n') {
 			if (!empty_line) {
-				white_spaces += "_";
+				if (true) white_spaces += "_";
+				else if (c == ' ') white_spaces += " ";
+				else if (c == '\t') white_spaces += "\\t";
+				else white_spaces += "\\n";
 			}
 		} else {
 			empty_line = false;
