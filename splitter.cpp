@@ -4,6 +4,12 @@
 #include <string>
 #include <deque>
 
+std::vector<expression>& choose_split_target(std::deque<expression>& stack, const bool as_param) {
+	return as_param ?
+		stack.front().parameter_children
+	  : stack.front().code_block_children;
+}
+
 /**
  * Splits the code into a tree of expressions
  * @param source Source code without comments
@@ -17,11 +23,21 @@
 
 	bool blank_line = true;
 	bool long_string = false;
+	bool ready_for_split = false;
+	bool add_as_parameter = false;
+	bool split_as_parameter = false;
 	unsigned int quotes = 0;
 	std::string white_spaces;
 
-	for (char c: source) {
-		if (c == ' ') {
+	for (char c : source + static_cast<char>(1)) {
+		if (c == 1) {
+			if (ready_for_split) {
+				expression front = stack.front();
+				stack.pop_front();
+				choose_split_target(stack, split_as_parameter).push_back(front);
+				ready_for_split = false;
+			}
+		} else if (c == ' ') {
 			if (!blank_line) {
 				white_spaces += ' ';
 			}
@@ -30,7 +46,7 @@
 				white_spaces += '\t';
 			}
 		} else if (((c == '\n' && !blank_line) || c == ';') && !long_string) {
-			stack.front().children.emplace_back(current);
+			choose_split_target(stack, add_as_parameter).emplace_back(current);
 			current = {};
 			blank_line = true;
 			white_spaces = "";
@@ -39,6 +55,12 @@
 			blank_line = true;
 			white_spaces = "";
 		} else if (c == '\"') {
+			if (ready_for_split) {
+				expression front = stack.front();
+				stack.pop_front();
+				choose_split_target(stack, split_as_parameter).push_back(front);
+				ready_for_split = false;
+			}
 			current.contents += white_spaces;
 			white_spaces = "";
 			current.contents += '\"';
@@ -56,14 +78,33 @@
 			blank_line = true;
 			white_spaces = "";
 		} else if (c == '}' && stack.size() > 1) {
-			if (!current.contents.empty()) stack.front().children.emplace_back(current);
+			if (!current.contents.empty()) choose_split_target(stack, add_as_parameter).emplace_back(current);
 			current = {};
 			blank_line = true;
 			white_spaces = "";
-			expression front = stack.front();
-			stack.pop_front();
-			stack.front().children.push_back(front);
+			ready_for_split = true;
+			add_as_parameter = false;
+		} else if (c == '(') {
+			stack.emplace_front(current);
+			current = {};
+			blank_line = true;
+			white_spaces = "";
+			add_as_parameter = true;
+		} else if (c == ')' && stack.size() > 1) {
+			if (!current.contents.empty()) choose_split_target(stack, add_as_parameter).emplace_back(current);
+			current = {};
+			blank_line = true;
+			white_spaces = "";
+			ready_for_split = true;
+			split_as_parameter = true;
 		} else {
+			if (ready_for_split) {
+				expression front = stack.front();
+				stack.pop_front();
+				choose_split_target(stack, split_as_parameter).push_back(front);
+				ready_for_split = false;
+				add_as_parameter = false;
+			}
 			current.contents += white_spaces;
 			white_spaces = "";
 			blank_line = false;
@@ -80,4 +121,98 @@
 
 	out = stack.back();
 	return out;
+}
+
+enum expr_separator {
+	CODE,	// `\n` & `;`
+	COMMA,	// `,`
+};
+
+
+
+[[nodiscard]] std::vector<expression> split_recursive_v2(std::deque<char>& stack_in, expr_separator separator = CODE) {
+	std::vector out = {expression()};
+
+	bool string_literal = false;
+	bool char_literal = false;
+	bool escape = false;
+	bool empty_line = false;
+	std::string white_spaces;
+	unsigned int quotes_set = 0;
+	unsigned int quotes_unset = 0;
+
+	while (!stack_in.empty()) {
+		char c = stack_in.front();
+		stack_in.pop_front();
+
+		if (string_literal) {
+			if (!escape) {
+				if (c == '\"') {
+					quotes_unset++;
+					out.back().contents += c;
+					continue;
+				}
+				if (quotes_unset == quotes_set) {
+					quotes_set = 0;
+					quotes_unset = 0;
+					string_literal = false;
+					empty_line = false;
+				} else quotes_unset = 0;
+				if (c == '\\') escape = true;
+			}
+		}
+		if (char_literal) {
+			if (!escape) {
+				if (c == '\'') char_literal = false;
+				if (c == '\\') escape = true;
+			}
+			out.back().contents += c;
+		} else if (c == '\"') {
+			quotes_set++;
+		} else {
+			if (quotes_set == 1 || quotes_set == 3) {
+				quotes_unset = 0;
+				string_literal = true;
+			} else quotes_set = 0;
+		}
+
+		if (c == '\'') {
+			char_literal = true;
+		}
+
+		if (c == '{') {
+			out.back().code_block_children = split_recursive_v2(stack_in, CODE);
+		} else if (c == '(') {
+			out.back().parameter_children = split_recursive_v2(stack_in, COMMA);
+		} else if (c == '}' || c == ')') {
+			return out;
+		} else if (
+			(((c == '\n' || c == ';') && separator == CODE) ||
+			 (c == ',' && separator == COMMA)) &&
+			!(
+				out.back().contents.empty() &&
+				out.back().parameter_children.empty() &&
+				out.back().code_block_children.empty())
+		) {
+			out.emplace_back();
+			empty_line = true;
+			white_spaces = "";
+		} else if (c == ' ' || c == '\t' || c == '\n') {
+			if (!empty_line) {
+				white_spaces += "_";
+			}
+		} else {
+			empty_line = false;
+			out.back().contents += white_spaces;
+			out.back().contents += c;
+			white_spaces = "";
+		}
+	}
+
+	return out;
+}
+
+[[nodiscard]] expression split_recursive_v2(const std::string& source) {
+	std::deque<char> stack{source.begin(), source.end()};
+	return {split_recursive_v2(stack)};
 }
