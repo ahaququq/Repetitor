@@ -10,3 +10,10 @@ add_executable(Repetitor main.cpp
         splitter.h
         source_module.cpp
         source_module.h)
+
+enable_testing()
+
+add_test(
+        NAME Repetitor
+        COMMAND Repetitor
+)
