@@ -1,0 +1,28 @@
+package org.example.main
+
+fun save(x: Int -> Bool)
+
+fun kill(x: (Bool) -> Unit, y: Float) {
+	return false
+}
+
+fun main() {
+	val file = File(Path("C:\\hello.txt"), "rw")
+
+	while (file.good()) {
+		val c = file.get()
+
+		if (c == "\a") {
+			continue;
+		}
+
+		if (c == "\t") {
+			save(c, (x: Int) -> {
+				print(x, 23)
+				return true;
+			}
+		}
+
+		print(c)
+	}
+}
