@@ -88,5 +88,5 @@ jobs:
           ${{ steps.strings.outputs.build-output-dir }}/Repetitor
           ${{ steps.strings.outputs.build-output-dir }}/Release/*.exe
           ${{ github.workspace }}/run/*.out
-          ${{ github.workspace }}/
+          #${{ github.workspace }}/
         # The desired behavior if no files are found using the provided path.
