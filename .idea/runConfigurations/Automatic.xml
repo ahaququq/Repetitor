@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Automatic" type="CMakeRunConfiguration" factoryName="Application" activateToolWindowBeforeRun="false" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://../run" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RepetitorProject" TARGET_NAME="Repetitor" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RepetitorProject" RUN_TARGET_NAME="Repetitor">
+  <configuration default="false" name="Automatic" type="CMakeRunConfiguration" factoryName="Application" activateToolWindowBeforeRun="false" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://../" PASS_PARENT_ENVS_2="true" PROJECT_NAME="RepetitorProject" TARGET_NAME="Repetitor" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="RepetitorProject" RUN_TARGET_NAME="Repetitor">
     <method v="2" />
   </configuration>
 </component>

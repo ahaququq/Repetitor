@@ -180,7 +180,11 @@ std::vector<expression>& choose_split_target(std::deque<expression>& stack, cons
 		if (c == '{') {
 			white_spaces = "";
 			empty_line = true;
-			out.back().code_block_children.append_range(split_recursive_v2(stack_in, CODE));
+			std::vector<expression> first = split_recursive_v2(stack_in, CODE);
+			out.back().code_block_children.insert(
+				out.back().code_block_children.end(),
+				first.begin(), first.end()
+				);
 			if (
 				out.back().code_block_children.back().contents.empty() &&
 				out.back().code_block_children.back().code_block_children.empty() &&
@@ -193,7 +197,11 @@ std::vector<expression>& choose_split_target(std::deque<expression>& stack, cons
 		} else if (c == '(') {
 			white_spaces = "";
 			empty_line = true;
-			out.back().parameter_children.append_range(split_recursive_v2(stack_in, COMMA));
+			std::vector<expression> first = split_recursive_v2(stack_in, COMMA);
+			out.back().parameter_children.insert(
+				out.back().parameter_children.end(),
+				first.begin(), first.end()
+				);
 			if (
 				out.back().parameter_children.back().contents.empty() &&
 				out.back().parameter_children.back().code_block_children.empty() &&
