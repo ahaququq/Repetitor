@@ -69,7 +69,7 @@ void print_expressions(
 }
 
 int main() {
-	std::ifstream in("./run/main.txt");
+	std::ifstream in("./main.txt");
 	std::ofstream out("./main.out");
 
 	std::string sourceCode;

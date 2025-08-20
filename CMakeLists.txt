@@ -20,4 +20,5 @@ enable_testing()
 add_test(
         NAME Repetitor
         COMMAND Repetitor
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/run
 )
