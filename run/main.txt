@@ -20,7 +20,9 @@ fun main() {
 			save(c, (x: Int) -> {
 				print(x, 23)
 				return true;
-			}
+			})
+		} else {
+			break;
 		}
 
 		print(c)

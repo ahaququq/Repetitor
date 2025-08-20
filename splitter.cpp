@@ -180,7 +180,7 @@ std::vector<expression>& choose_split_target(std::deque<expression>& stack, cons
 		if (c == '{') {
 			white_spaces = "";
 			empty_line = true;
-			out.back().code_block_children = split_recursive_v2(stack_in, CODE);
+			out.back().code_block_children.append_range(split_recursive_v2(stack_in, CODE));
 			if (
 				out.back().code_block_children.back().contents.empty() &&
 				out.back().code_block_children.back().code_block_children.empty() &&
@@ -189,14 +189,11 @@ std::vector<expression>& choose_split_target(std::deque<expression>& stack, cons
 				out.back().code_block_children.pop_back();
 			}
 			if (out.back().code_block_children.empty()) out.back().had_code = true;
-			if (true) {
-				out.emplace_back();
-				had_code = false;
-			} else had_code = true;
+			had_code = true;
 		} else if (c == '(') {
 			white_spaces = "";
 			empty_line = true;
-			out.back().parameter_children = split_recursive_v2(stack_in, COMMA);
+			out.back().parameter_children.append_range(split_recursive_v2(stack_in, COMMA));
 			if (
 				out.back().parameter_children.back().contents.empty() &&
 				out.back().parameter_children.back().code_block_children.empty() &&
@@ -205,10 +202,7 @@ std::vector<expression>& choose_split_target(std::deque<expression>& stack, cons
 				out.back().parameter_children.pop_back();
 			}
 			if (out.back().parameter_children.empty()) out.back().had_parameters = true;
-			if (had_parameters) {
-				out.emplace_back();
-				had_parameters = false;
-			} else had_parameters = true;
+			had_parameters = true;
 		} else if (c == '}' || c == ')') {
 			return out;
 		} else if (
@@ -232,6 +226,13 @@ std::vector<expression>& choose_split_target(std::deque<expression>& stack, cons
 				else white_spaces += "\\n";
 			}
 		} else {
+			if (had_code || had_parameters) {
+				out.emplace_back();
+				had_code = false;
+				had_parameters = false;
+				empty_line = true;
+				white_spaces = "";
+			}
 			empty_line = false;
 			out.back().contents += white_spaces;
 			out.back().contents += c;
