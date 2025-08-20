@@ -70,7 +70,7 @@ void print_expressions(
 
 int main() {
 	std::ifstream in("./run/main.txt");
-	std::ofstream out("./run/main.out");
+	std::ofstream out("./main.out");
 
 	std::string sourceCode;
 
